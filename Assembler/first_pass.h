@@ -33,16 +33,16 @@
 
 // First Pass
 void first_pass(const char* filename);
-void read_line_first_pass(const char* line, int* ic, int* dc, const int line_number);
+void read_line_first_pass(char* line, int* ic, int* dc, const int line_number);
 
 // Allocation
-boolean insert_new_command(const char* data, const int num_instructions);
-void insert_new_data(const char* data);
+boolean insert_new_command(char* data, const int num_instructions);
+void insert_new_data(char* data);
 
 // Commands
-int read_command(const OpCode command_type, const char* data, const int line_number);
+int read_command(const OpCode command_type, char* data, const int line_number);
 
 // Directives
-void read_extern(const char* externs, const int line_number);
-int read_data(const char* data, const int line_number);
-int read_string(const char* string, const int line_number);
+void read_extern(char* externs, const int line_number);
+int read_data(char* data, const int line_number);
+int read_string(char* string, const int line_number);

@@ -1,8 +1,8 @@
 #pragma once
 
-#define INSTRUCTION_WORD_SIZE	12 // Instruction Word Size
-#define MAX_LABEL_SIZE				30 // Max Label Length
-#define MAX_LINE_SIZE				80 // Max Line Length
+#define INSTRUCTION_WORD_SIZE		12
+#define MAX_LABEL_SIZE				30
+#define MAX_LINE_SIZE				80
 
 typedef struct Label* labelPtr;
 

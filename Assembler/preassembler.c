@@ -13,7 +13,6 @@ char* preassembler()
 	if (input_file == NULL)
 		handle_error(ERROR_FILE_INVALID, filename, 0);
 
-	size_t spread_filename_length = strlen(filename);
 	char* spread_filename = change_file_extension(filename, "as", "am");
 
 	FILE* spread_file = fopen(spread_filename, "w");
@@ -52,7 +51,7 @@ char* preassembler()
 	return spread_filename;
 }
 
-void read_line_preassembler(const FILE* spread_file, const char* line, const int line_number, boolean* macro_flag, char** macro_name)
+void read_line_preassembler(FILE* spread_file, char* line, const int line_number, boolean* macro_flag, char** macro_name)
 {
 	if (!spread_file || !line || do_ignore_line(&line))
 		return;
@@ -100,7 +99,7 @@ void read_line_preassembler(const FILE* spread_file, const char* line, const int
 	}
 
 	macroPtr temp_macro;
-	if (temp_macro = get_macro(temp))
+	if ((temp_macro = get_macro(temp)))
 	{
 		int macro_name_length = strlen(temp_macro->name);
 		while (temp_macro && strncmp(temp_macro->name, temp, macro_name_length) == 0)

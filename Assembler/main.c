@@ -10,7 +10,7 @@
 #include "second_pass.h"
 
 // Input assembly file name
-const char* filename = "/home/shaitamar/projects/Assembler/assembly/test.as";
+const char* filename = NULL;
 const char* command_names[NUM_COMMANDS] = { 
     "mov", "cmp", "add", "sub", 
     "not", "clr", "lea", "inc", 
@@ -26,7 +26,9 @@ char* data_instructions = NULL;
 labelPtr firstLabel = NULL;
 macroPtr firstMacro = NULL;
 
-int main() {
+int main(int argc, char* argv[]) {
+    filename = get_full_path(change_file_extension(argv[1], "", ".as"));
+
     command_instructions = (char*)malloc(1);
     if (!command_instructions)
         handle_error(ERROR_ALLOCATION_FAILED, NULL, 0);
@@ -38,7 +40,7 @@ int main() {
 
     data_instructions[0] = '\0';
 
-    const char* spread_filename = preassembler();
+    char* spread_filename = preassembler();
     first_pass(spread_filename);
     second_pass(spread_filename);
 
@@ -48,6 +50,7 @@ int main() {
     second_pass("/home/shaitamar/projects/Assembler/assembly/test.as");*/
     
     write_ob_file();
+    printf("%s 1 \n", filename);
 
     exit(EXIT_SUCCESS);
 }

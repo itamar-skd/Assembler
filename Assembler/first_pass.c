@@ -2,6 +2,7 @@
 #include <string.h>
 #include <limits.h>
 #include <stddef.h>
+#include <ctype.h>
 
 #include "first_pass.h"
 #include "structs.h"
@@ -50,7 +51,7 @@ void first_pass(const char* filename)
 	fclose(input_file);
 } /* first_pass */
 
-void read_line_first_pass(const char* line, int* ic, int* dc, const int line_number)
+void read_line_first_pass(char* line, int* ic, int* dc, const int line_number)
 {
 	if (!line || !ic || !dc) return;
 
@@ -77,7 +78,7 @@ void read_line_first_pass(const char* line, int* ic, int* dc, const int line_num
 	// Check for a label
 	if ((label_length = has_label(temp, line_length)) != -1)
 	{
-		strncpy(label, temp, label_length);
+		memcpy(label, temp, label_length);
 		label[label_length] = '\0';
 
 		// Advance to the next field
@@ -100,8 +101,6 @@ void read_line_first_pass(const char* line, int* ic, int* dc, const int line_num
 		// (OPTIONAL LABEL): .(directive) (operands)
 
 		// read_(directive name) handles the directive's instruction list
-
-		Error directive_unseparated_err;
 
 		if (strncmp(temp, "entry", strlen("entry")) == 0)
 		{
@@ -200,10 +199,10 @@ void read_line_first_pass(const char* line, int* ic, int* dc, const int line_num
 	*ic += read_command(opcode, temp, line_number);
 } /* read_line_first_pass */
 
-boolean insert_new_command(const char* data, const int num_instructions)
+boolean insert_new_command(char* data, const int num_instructions)
 {
 	if (!data || strlen(data) > 12 * num_instructions)
-		return;
+		return FALSE;
 
 	const int data_length = strlen(data);
 	const int new_instructions_length = strlen(command_instructions) + data_length + 1 /* null terminator */;
@@ -215,9 +214,10 @@ boolean insert_new_command(const char* data, const int num_instructions)
 	command_instructions = new_ptr;
 
 	strcat(command_instructions, data);
+	return TRUE;
 } /* allocate_new_instruction */
 
-void insert_new_data(const char* data)
+void insert_new_data(char* data)
 {
 	if (strlen(data) != 12)
 		return;
@@ -228,7 +228,7 @@ void insert_new_data(const char* data)
 	strcat(data_instructions, data);
 }
 
-int read_command(const OpCode command_type, const char* data, const int line_number)
+int read_command(const OpCode command_type, char* data, const int line_number)
 {
 	int num_statements = 1;
 
@@ -272,7 +272,7 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 	command[command_length] = '\0';
 
 	// A, R, E - The first word will always be absolute.
-	strncpy(&command[10], "00", strlen("00"));
+	strcpy(&command[10], "00");
 
 	// OPCODE - A command's index in the command table.
 	char opcode[4 + 1 /* null terminator */];
@@ -281,7 +281,7 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 
 	char* opcode_ptr = opcode;
 	int_to_binary(&opcode_ptr, command_type, 4, FALSE);
-	strncpy(&command[3], opcode, strlen(opcode));
+	memcpy(&command[3], opcode, strlen(opcode));
 
 	int num_immediate = 0;
 	int num_register = 0;
@@ -306,7 +306,7 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 		if ((num_immediate = is_number(source_operand)) != INT_MIN)
 		{
 			source_operand_method = IMMEDIATE_METHOD;
-			strncpy(&(command[0]), "001", strlen("001"));
+			memcpy(&(command[0]), "001", strlen("001"));
 
 			char immediate_binary[10 + 1 /* null terminator */];
 			memset(&immediate_binary, '0', 10);
@@ -317,17 +317,17 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 			{
 				handle_error(ERROR_DATA_INVALID_INTEGER, source_operand, line_number);
 			}
-			strncpy(&(command[12]), immediate_binary_ptr, 10);
+			memcpy(&(command[12]), immediate_binary_ptr, 10);
 		}
 		else if (is_valid_label(source_operand))
 		{
 			source_operand_method = DIRECT_METHOD;
-			strncpy(&(command[0]), "011", strlen("001"));
+			memcpy(&(command[0]), "011", strlen("001"));
 		}
 		else if ((num_register = is_register(source_operand)) != -1)
 		{
 			source_operand_method = REGISTER_DIRECT_METHOD;
-			strncpy(&(command[0]), "101", strlen("001"));
+			memcpy(&(command[0]), "101", strlen("001"));
 
 			char register_binary[5 + 1 /* null terminator */];
 			memset(&register_binary, '0', 5);
@@ -335,7 +335,7 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 
 			char* register_binary_ptr = register_binary;
 			int_to_binary(&register_binary_ptr, num_register, 5, FALSE);
-			strncpy(&(command[12]), register_binary_ptr, 5);
+			memcpy(&(command[12]), register_binary_ptr, 5);
 		}
 		else {
 			handle_error(ERROR_OPERAND_INVALID, source_operand, line_number);
@@ -365,15 +365,10 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 
 		target_operand[i] = '\0';
 
-		if (strncmp(target_operand, "-5", strlen("-5")) == 0)
-		{
-			int a = 5;
-		}
-
 		if ((num_immediate = is_number(target_operand)) != INT_MIN)
 		{
 			target_operand_method = IMMEDIATE_METHOD;
-			strncpy(&(command[7]), "001", strlen("001"));
+			memcpy(&(command[7]), "001", strlen("001"));
 
 			char immediate_binary[10 + 1 /* null terminator */];
 			memset(&immediate_binary, '0', 10);
@@ -386,17 +381,17 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 				handle_error(ERROR_DATA_INVALID_INTEGER, target_operand, line_number);
 			}
 
-			strncpy(&(command[target_index]), immediate_binary_ptr, 10);
+			memcpy(&(command[target_index]), immediate_binary_ptr, 10);
 		}
 		else if (is_valid_label(target_operand))
 		{
 			target_operand_method = DIRECT_METHOD;
-			strncpy(&(command[7]), "011", strlen("001"));
+			memcpy(&(command[7]), "011", strlen("001"));
 		}
 		else if ((num_register = is_register(target_operand)) != -1)
 		{
 			target_operand_method = REGISTER_DIRECT_METHOD;
-			strncpy(&(command[7]), "101", strlen("001"));
+			memcpy(&(command[7]), "101", strlen("001"));
 
 			char register_binary[5 + 1 /* null terminator */];
 			memset(&register_binary, '0', 5);
@@ -424,7 +419,7 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 				target_index += 24;
 			}
 
-			strncpy(&(command[target_index]), register_binary_ptr, 5);
+			memcpy(&(command[target_index]), register_binary_ptr, 5);
 		}
 		else
 		{
@@ -455,7 +450,7 @@ int read_command(const OpCode command_type, const char* data, const int line_num
 	return num_statements;
 } /* read_command */
 
-void read_extern(const char* externs, const int line_number)
+void read_extern(char* externs, const int line_number)
 {
 	const int line_length = strlen(externs);
 
@@ -496,7 +491,7 @@ void read_extern(const char* externs, const int line_number)
 	}
 } /* read_extern */
 
-int read_data(const char* data, const int line_number)
+int read_data(char* data, const int line_number)
 {
 	const int line_length = strlen(data);
 	char* temp = data;
@@ -609,7 +604,7 @@ int read_data(const char* data, const int line_number)
 	return data_size;
 } /* read_data */
 
-int read_string(const char* string, const int line_number)
+int read_string(char* string, const int line_number)
 {
 	char* temp = string;
 	int string_length = 0;
@@ -638,13 +633,13 @@ int read_string(const char* string, const int line_number)
 		int current = *temp;
 		if (current > 127)
 		{
-			handle_error(ERROR_STRING_INVALID_CHARACTER, *temp, line_number);
+			handle_error(ERROR_STRING_INVALID_CHARACTER, temp, line_number);
 		}
 
 		string_length++;
 		if (!int_to_binary(&binary_stream, current, 12, FALSE))
 		{
-			handle_error(ERROR_STRING_INVALID_CHARACTER, *temp, line_number);
+			handle_error(ERROR_STRING_INVALID_CHARACTER, temp, line_number);
 		}
 
 		insert_new_data(binary_stream);

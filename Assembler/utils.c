@@ -5,6 +5,7 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "utils.h"
 #include "ext_vars.h"
@@ -15,13 +16,7 @@ boolean is_assembly_file(const char* filename)
 	return strcmp(&filename[filename_length - 3], ".as") == 0;
 }
 
-void get_spread_filename(const char* filename, char* spread_filename)
-{
-	strncpy(spread_filename, filename, strlen(filename) - 3 /* ".as" */);
-	strncpy(&(spread_filename[strlen(filename) - 3]), ".am", 3);
-}
-
-Error get_macro_name(const char* line, char** macro_name)
+Error get_macro_name(char* line, char** macro_name)
 {
 	int macro_length = 0;
 	char* temp = line;
@@ -43,7 +38,7 @@ Error get_macro_name(const char* line, char** macro_name)
 		handle_error(ERROR_ALLOCATION_FAILED, NULL, 0);
 
 	(*macro_name)[macro_length] = '\0';
-	strncpy(*macro_name, line, macro_length);
+	memcpy(*macro_name, line, macro_length);
 
 	if (!is_valid_label(*macro_name))
 		return ERROR_MACRO_INVALID;
@@ -51,7 +46,7 @@ Error get_macro_name(const char* line, char** macro_name)
 	return NO_ERROR;
 }
 
-macroPtr get_macro(const char* line)
+macroPtr get_macro(char* line)
 {
 	if (!line)
 		return NULL;
@@ -102,7 +97,7 @@ void insert_macro_line(const char* line, const char* macro_name)
 	temp->next = newMacroLine;
 }
 
-char* change_file_extension(char* filename, char* prev_extension, char* new_extension)
+char* change_file_extension(const char* filename, const char* prev_extension, const char* new_extension)
 {
 	size_t prev_filename_length = strlen(filename);
 	int new_filename_length = prev_filename_length - strlen(prev_extension) + strlen(new_extension);
@@ -114,9 +109,20 @@ char* change_file_extension(char* filename, char* prev_extension, char* new_exte
 	memset(new_filename, '0', new_filename_length);
 	new_filename[new_filename_length] = '\0';
 
-	strncpy(new_filename, filename, prev_filename_length - strlen(prev_extension));
+	memcpy(new_filename, filename, prev_filename_length - strlen(prev_extension));
 	strcpy(&(new_filename[prev_filename_length - strlen(prev_extension)]), new_extension);
 	return new_filename;
+}
+
+char* get_full_path(char* filename)
+{
+	char cwd[PATH_MAX];
+	if (!getcwd(cwd, sizeof(cwd)))
+		handle_error(ERROR_ALLOCATION_FAILED, NULL, 0);
+
+	char* full_path;
+	asprintf(&full_path, "%s/%s", cwd, filename);
+	return full_path;
 }
 
 void twos_complement(char** output)
@@ -174,7 +180,7 @@ boolean int_to_binary(char** output, int num, int length, boolean use_twos_compl
 	return TRUE;
 } /* int_to_binary */
 
-int get_line_length(const char* line)
+int get_line_length(char* line)
 {
 	char* temp = line;
 	int length = 0;
@@ -233,7 +239,7 @@ int has_label(char* line, int line_length)
 	return -1;
 } /* has_label */
 
-int is_number(const char* str)
+int is_number(char* str)
 {
 	if (!str || *str == '\0')
 		return INT_MIN;
@@ -255,8 +261,8 @@ int is_number(const char* str)
 	}
 
 	char* endptr = nullptr;
-	int num = strtol(str, endptr, 10);
-	if (endptr != '\0')
+	int num = strtol(str, &endptr, 10);
+	if (*endptr != '\0')
 		return INT_MIN;
 
 	return num;
@@ -282,7 +288,7 @@ int is_register(const char* str)
 	return register_num;
 } /* is_register */
 
-boolean is_valid_label(const char* str)
+boolean is_valid_label(char* str)
 {
 	if (!str)
 		return FALSE;
@@ -346,7 +352,7 @@ int get_num_operands(const OpCode opcode)
 	}
 }
 
-boolean read_directive(const char** line_ptr, int* line_length, const char* directive)
+boolean read_directive(char** line_ptr, int* line_length, const char* directive)
 {
 	char* line = *line_ptr;
 	const int directive_length = strlen(directive);
@@ -377,7 +383,7 @@ boolean label_exists(const char* str)
 	return FALSE;
 } /* label_exists */
 
-Error add_label(const char* label, const int address, boolean is_code, boolean is_data, boolean is_extern)
+Error add_label(char* label, const int address, boolean is_code, boolean is_data, boolean is_extern)
 {
 	if (label_exists(label))
 	{
@@ -492,7 +498,7 @@ labelPtr set_label_as_entry(const char* label_name)
 	return NULL;
 } /* set_label_as_entry */
 
-void write_external_to_file(const char* external_name, const int ic)
+void write_external_to_file(char* external_name, const int ic)
 {
 	char* output_filename = change_file_extension(filename, ".as", ".ext");
 	FILE* output_file;
@@ -516,7 +522,7 @@ void write_external_to_file(const char* external_name, const int ic)
 	fclose(output_file);
 }
 
-void write_entries_to_file(const char* entry_name, const int address)
+void write_entries_to_file(char* entry_name, const int address)
 {
 	char* output_filename = change_file_extension(filename, ".as", ".ent");
 	FILE* output_file;
@@ -562,7 +568,7 @@ void write_ob_file()
 
 	for (int i = 0; i < num_commands; i++)
 	{
-		strncpy(temp, command_temp, 12);
+		memcpy(temp, command_temp, 12);
 		fwrite(temp, sizeof(char), 13, output_file);
 		command_temp += 12;
 		length_command -= 12;
@@ -570,7 +576,7 @@ void write_ob_file()
 
 	for (int i = 0; i < num_data; i++)
 	{
-		strncpy(temp, data_temp, 12);
+		memcpy(temp, data_temp, 12);
 		// If it's the last datum, don't write the \n character
 		fwrite(temp, sizeof(char), (length_data == 12) ? 12 : 13, output_file);
 		data_temp += 12;
@@ -641,6 +647,8 @@ void handle_error(Error error, const char* data, const int line_number)
 		case ERROR_OPERAND_INVALID:
 			asprintf(&error_message, "Invalid operand: \"%s\".", data);
 			break;
+		case NO_ERROR:
+			return;
 	}
 
 	log_error(error_message, line_number);
@@ -651,5 +659,5 @@ void log_error(const char* error_message, const int line_number)
 {
 	setvbuf(stdout, NULL, _IONBF, 0);
 	printf("An unexpected error was detected: %s\n", error_message);
-	printf("Line number in input file: %d", line_number);
+	printf("Line number in input file: %d\n", line_number);
 }

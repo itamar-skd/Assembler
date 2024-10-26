@@ -14,13 +14,13 @@
 
 // Second Pass
 void second_pass(const char* filename);
-void read_line_second_pass(const char* line, const int line_number, int* ic);
+void read_line_second_pass(char* line, const int line_number, int* ic);
 
 // Allocation
-void write_to_commands(const char* word, int ic);
+void write_to_commands(char* word, int ic);
 
 // Directives
-void read_entry(const char* entries, const int line_number);
+void read_entry(char* entries, const int line_number);
 
 // Commands
-int read_command_second_pass(const OpCode opcode, const char* operands, const int line_number, int ic);
+int read_command_second_pass(const OpCode opcode, char* operands, const int line_number, int ic);

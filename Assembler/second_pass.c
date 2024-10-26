@@ -38,7 +38,7 @@ void second_pass(const char* filename)
 	fclose(input_file);
 }
 
-void read_line_second_pass(const char* line, const int line_number, int* ic)
+void read_line_second_pass(char* line, const int line_number, int* ic)
 {
 	if (!line || !ic)
 		return;
@@ -93,20 +93,19 @@ void read_line_second_pass(const char* line, const int line_number, int* ic)
 	*ic += read_command_second_pass(opcode, temp, line_number, *ic);
 }
 
-void write_to_commands(const char* word, int ic)
+void write_to_commands(char* word, int ic)
 {
 	if (!word || ic >= strlen(command_instructions))
 		return;
 
 	int target_index = ic * 12;
 
-	strncpy(&(command_instructions[target_index]), word, strlen(word));
+	memcpy(&(command_instructions[target_index]), word, strlen(word));
 }
 
-void read_entry(const char* entries, const int line_number)
+void read_entry(char* entries, const int line_number)
 {
 	char* entries_iterator = entries;
-	int entries_length = strlen(entries); 
 
 	char label[MAX_LABEL_SIZE + 1 /* null terminator */];
 	memset(label, '0', MAX_LABEL_SIZE);
@@ -153,7 +152,7 @@ void read_entry(const char* entries, const int line_number)
 	}
 }
 
-int read_command_second_pass(const OpCode opcode, const char* operands, const int line_number, int ic)
+int read_command_second_pass(const OpCode opcode, char* operands, const int line_number, int ic)
 {
 	// Immediate values and registers as operands were already handled in the first pass.
 	// In the second pass, we're only looking for labels as operands.
@@ -222,7 +221,7 @@ int read_command_second_pass(const OpCode opcode, const char* operands, const in
 			{
 				if (!is_extern)
 				{
-					strncpy(&(source_word[10]), "10", strlen("10"));
+					memcpy(&(source_word[10]), "10", strlen("10"));
 
 					int source_address = get_label_address(source_operand);
 					char address_binary[10 + 1 /* null terminator */];
@@ -231,11 +230,11 @@ int read_command_second_pass(const OpCode opcode, const char* operands, const in
 
 					char* address_binary_ptr = address_binary_ptr;
 					int_to_binary(&address_binary_ptr, source_address, 10, FALSE);
-					strncpy(source_word, address_binary, 10);
+					memcpy(source_word, address_binary, 10);
 				}
 				else
 				{
-					strncpy(&(source_word[10]), "01", strlen("01")); // Resembles external variable
+					memcpy(&(source_word[10]), "01", strlen("01")); // Resembles external variable
 					write_external_to_file(source_operand, ic + 1);
 				}
 			}
@@ -297,7 +296,7 @@ int read_command_second_pass(const OpCode opcode, const char* operands, const in
 			{
 				if (!is_extern)
 				{
-					strncpy(&(target_word[10]), "10", strlen("10"));
+					memcpy(&(target_word[10]), "10", strlen("10"));
 
 					int target_address = get_label_address(target_operand);
 					char address_binary[10 + 1 /* null terminator */];
@@ -306,11 +305,11 @@ int read_command_second_pass(const OpCode opcode, const char* operands, const in
 
 					char* address_binary_ptr = address_binary;
 					int_to_binary(&address_binary_ptr, target_address, 10, FALSE);
-					strncpy(target_word, address_binary, 10);
+					memcpy(target_word, address_binary, 10);
 				}
 				else
 				{
-					strncpy(&(target_word[10]), "01", strlen("01")); // Resembles external variable
+					memcpy(&(target_word[10]), "01", strlen("01")); // Resembles external variable
 					write_external_to_file(target_operand, ic + (source_operand ? 2 : 1));
 				}
 			}

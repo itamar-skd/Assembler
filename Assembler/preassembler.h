@@ -32,4 +32,4 @@
 
 char* preassembler();
 
-void read_line_preassembler(const FILE* spread_file, const char* line, const int line_number, boolean* macro_flag, char** macro_name);
+void read_line_preassembler(FILE* spread_file, char* line, const int line_number, boolean* macro_flag, char** macro_name);
