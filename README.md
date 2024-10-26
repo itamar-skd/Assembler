@@ -37,10 +37,10 @@ END: stop ; (ic = 5 -> END = 5)
 ```
 A label may be **local** or **external**.<br/>
 Labels marked as entries in one file may be used as external labels in other files.<br/>
-An external label in one file takes the value of where it was defined as an entry. See [2.3 Directives](https://github.com/itamar-skd/Assembler/edit/master/README.md#3-directives) to see how this is done.
+An external label in one file takes the value of where it was defined as an entry. See [2.3 Directives](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#23-directives) to see how this is done.
 ### 2.2 Instructions
 Instructions control the flow of the program and instruct the machine what to do.<br/>
-The following is a table of all instructions, their opcode (see [3.2 Instructions](https://github.com/itamar-skd/Assembler/edit/master/README.md#32-instructions)), and how many operands they take.
+The following is a table of all instructions, their opcode (see [3.2 Instructions](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#32-instructions)), and how many operands they take.
 | Instruction | Opcode | # Operands |
 | --- | --- | --- |
 | MOV | 0 | 2 |
@@ -70,8 +70,8 @@ Directives take either one or an unlimited number of operands:
 | --- | --- | --- | --- |
 | .string | 1 | Store a string* of characters in memory | .string "abcdef" |
 | .data | Unlimited | Store integers** in memory | .data 6, 7, -13, 25 |
-| .extern | Unlimited | Mark a label as an external (see [2.1 Labels](https://github.com/itamar-skd/Assembler/edit/master/README.md#3-directives)) | .extern LENGTH, L1 |
-| .entry | Unlimited | Mark a label as an entry (see [2.1 Labels](https://github.com/itamar-skd/Assembler/edit/master/README.md#3-directives)) | .entry MAIN, END |
+| .extern | Unlimited | Mark a label as an external (see [2.1 Labels](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#21-labels)) | .extern LENGTH, L1 |
+| .entry | Unlimited | Mark a label as an entry (see [2.1 Labels](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#21-labels)) | .entry MAIN, END |
 
 \* Recall that a string is terminated by the null-terminator: `'\0'`.<br/>
 \*\* Integers are converted to binary using the [Two's complement method](https://en.wikipedia.org/wiki/Two%27s_complement).
@@ -84,7 +84,7 @@ mcro <macro name>
   ...
 endmcro
 ```
-You can paste the block of code between `mcro` and `endmcro` around your program by writing the macro's name. See Preassembler.<br/>
+You can paste the block of code between `mcro` and `endmcro` around your program by writing the macro's name. See [4.1 Preassembler](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#41-preassembler).<br/>
 `Program.as` File:
 ```
 mcro m1
@@ -217,7 +217,7 @@ There are a few problems we will need to face, which we will get into in every s
 The preassembler's job is to set-up the input file.<br/>
 The assembler itself doesn't read macros. It wants to receive pure assembly code so it can execute it line by line. The preassembler's purpose is to spread these macros where they are called.<br/>
 The work done by the preassembler is written to a `Program.am` file, that is passed to the First-Pass and Second-Pass functions.<br/><br/>
-To see an example of the output of the preassembler, please refer to [2.4 Macros](https://github.com/itamar-skd/Assembler/edit/master/README.md#24-macros).
+To see an example of the output of the preassembler, please refer to [2.4 Macros](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#24-macros).
 ### 4.2 First-Pass
 As the name suggests, the first-pass routine is the first routine to properly read through the assembly file.<br/>
 Here, we tackle a new problem: Labels do not have to be defined before they are used.<br/>
@@ -235,7 +235,7 @@ Along the way, first-pass also starts writing machine code for values and addres
 3. Data and Strings
 
 Additionally, the first-pass also allocates space for where Direct operand words should go.
-Finally, the first-pass also writes the `.ext` file, [5.3 `Program.ext` File](https://github.com/itamar-skd/Assembler/edit/master/README.md#53-programext-file).
+Finally, the first-pass also writes the `.ext` file, see [5.3 `Program.ext` File](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#53-programext-file).
 
 ### 4.2.1 Post First-Pass Example
 Consider the following code:
@@ -269,7 +269,7 @@ After the first-pass, the following label table has been written down:
 
 ### 4.3 Second-Pass
 Now that we're aware of all of the labels and the addresses they correspond to, the second-pass routine's objective is to fill in for the missing holes in the machine code.<br/>
-Additionally, the labels can now be marked as entry/non-entry to prepare the `.ent` file, see [5.4 `Program.ent` File](https://github.com/itamar-skd/Assembler/edit/master/README.md#54-programent-file).
+Additionally, the labels can now be marked as entry/non-entry to prepare the `.ent` file, see [5.4 `Program.ent` File](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#54-programent-file).
 
 ### 4.3.2 Post Second-Pass Example
 Consider the code from before.
@@ -304,7 +304,7 @@ After the second-pass, the following label table has been written down:
 ## 5 Output Files
 ### 5.1 `Program.am` File
 The `Program.am` file is the result of the work done by the preassembler routine.<br/>
-To see an example of what the `program.am` looks like, please refer to [2.4 Macros](https://github.com/itamar-skd/Assembler/edit/master/README.md#24-macros).
+To see an example of what the `program.am` looks like, please refer to [2.4 Macros](https://github.com/itamar-skd/Assembler?tab=readme-ov-file#24-macros).
 ### 5.2 `Program.ob` File
 The `Program.ob` file is the translated machine code.<br/><br/>
 This, for example, is the first 10 lines of code generated by running the example test file included in this repository:
