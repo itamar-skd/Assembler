@@ -50,7 +50,6 @@ int main(int argc, char* argv[]) {
     second_pass("/home/shaitamar/projects/Assembler/assembly/test.as");*/
     
     write_ob_file();
-    printf("%s 1 \n", filename);
 
     exit(EXIT_SUCCESS);
 }

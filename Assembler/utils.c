@@ -21,7 +21,7 @@ Error get_macro_name(char* line, char** macro_name)
 	int macro_length = 0;
 	char* temp = line;
 
-	while (!is_space(*temp) && *temp != '\n' && *temp != '\0')
+	while (!is_space(*temp) && !is_end_of_line(*temp))
 	{
 		macro_length++;
 		temp++;
@@ -184,7 +184,7 @@ int get_line_length(char* line)
 {
 	char* temp = line;
 	int length = 0;
-	while (*temp != '\n' && *temp != '\0')
+	while (!is_end_of_line(*temp))
 	{
 		length++;
 		temp++;
@@ -193,9 +193,14 @@ int get_line_length(char* line)
 	return length;
 }
 
-boolean is_space(const char c)
+boolean is_space(char c)
 {
 	return c == ' ' || c == '\t';
+}
+
+boolean is_end_of_line(char c)
+{
+	return c == '\r' || c == '\n' || c == '\0';
 }
 
 void skip_spaces(char** line)
@@ -218,7 +223,7 @@ boolean do_ignore_line(char** line)
 {
 	skip_spaces(line);
 
-	return (**line == ';' || **line == '\n' || **line == '\0');
+	return (**line == ';' || is_end_of_line(**line));
 } /* do_ignore_line */
 
 int has_label(char* line, int line_length)
@@ -241,7 +246,7 @@ int has_label(char* line, int line_length)
 
 int is_number(char* str)
 {
-	if (!str || *str == '\0')
+	if (!str || is_end_of_line(*str))
 		return INT_MIN;
 
 	char* temp = str;
@@ -250,7 +255,7 @@ int is_number(char* str)
 
 	temp++;
 
-	while (*temp != '\0')
+	while (!is_end_of_line(*temp))
 	{
 		if (!isdigit(*temp))
 		{
@@ -297,7 +302,7 @@ boolean is_valid_label(char* str)
 	if (!isalpha(*temp))
 		return FALSE;
 
-	while (*temp != '\0')
+	while (!is_end_of_line(*temp))
 	{
 		if (!isalpha(*temp) && !isdigit(*temp))
 			return FALSE;

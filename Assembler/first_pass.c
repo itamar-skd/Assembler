@@ -153,7 +153,7 @@ void read_line_first_pass(char* line, int* ic, int* dc, const int line_number)
 			directive[MAX_LINE_SIZE] = '\0';
 
 			int counter = 0;
-			while (*temp != ' ' && *temp != '\t' && *temp != '\n' && *temp != '\0')
+			while (*temp != ' ' && *temp != '\t' && !is_end_of_line(*temp))
 			{
 				directive[counter] = *temp;
 				counter++;
@@ -186,7 +186,7 @@ void read_line_first_pass(char* line, int* ic, int* dc, const int line_number)
 	command_name[MAX_COMMAND_LENGTH] = '\0';
 
 	int i;
-	for (i = 0; *temp != ' ' && *temp != '\t' && *temp != '\n' && *temp != '\0' && i < MAX_COMMAND_LENGTH; temp++, line_length--, i++)
+	for (i = 0; *temp != ' ' && *temp != '\t' && !is_end_of_line(*temp) && i < MAX_COMMAND_LENGTH; temp++, line_length--, i++)
 		command_name[i] = *temp;
 
 	command_name[i] = '\0';
@@ -289,7 +289,7 @@ int read_command(const OpCode command_type, char* data, const int line_number)
 	if (source_operand)
 	{
 		int i = 0;
-		while (*temp != ',' && *temp != '\n' && *temp != '\0')
+		while (*temp != ',' && !is_end_of_line(*temp))
 		{
 			if (*temp != ' ' && *temp != '\t')
 			{
@@ -351,7 +351,7 @@ int read_command(const OpCode command_type, char* data, const int line_number)
 	if (target_operand)
 	{
 		int i = 0;
-		while (*temp != ',' && *temp != '\n' && *temp != '\0')
+		while (*temp != ',' && !is_end_of_line(*temp))
 		{
 			if (*temp != ' ' && *temp != '\t')
 			{
@@ -452,7 +452,7 @@ int read_command(const OpCode command_type, char* data, const int line_number)
 
 void read_extern(char* externs, const int line_number)
 {
-	const int line_length = strlen(externs);
+	const int line_length = get_line_length(externs);
 
 	char* temp = externs;
 	char current_label[MAX_LABEL_SIZE + 1 /* null terminator */];
@@ -461,15 +461,15 @@ void read_extern(char* externs, const int line_number)
 
 	int current_label_length = 0;
 	int current_iterator = 0;
-	for (int i = 0; i < line_length; i++)
+	for (int i = 0; i <= line_length; i++)
 	{
-		if (*temp == ' ' || *temp == '\t' || *temp == '\0')
+		if (*temp == ' ' || *temp == '\t')
 		{
 			temp++;
 			continue;
 		}
 
-		if (*temp == ',' || i == line_length - 1)
+		if (*temp == ',' || is_end_of_line(*temp))
 		{
 			Error label_error;
 			current_label[current_iterator] = '\0';
@@ -477,6 +477,9 @@ void read_extern(char* externs, const int line_number)
 			{
 				handle_error(label_error, current_label, line_number);
 			}
+
+			if (*temp == '\r' || is_end_of_line(*temp))
+				return;
 
 			current_label_length = 0;
 			current_iterator = 0;
@@ -513,7 +516,7 @@ int read_data(char* data, const int line_number)
 	int counter = 0;
 	for (int i = 0; i < line_length; i++)
 	{
-		if (*temp != ',' && *temp != ' ' && *temp != '\t' && *temp != '\n' && *temp != '\0')
+		if (*temp != ',' && *temp != ' ' && *temp != '\t' && !is_end_of_line(*temp))
 		{
 			if (isdigit(*temp) || (data_lengths[counter] == 0 && *temp == '-'))
 			{
@@ -556,7 +559,7 @@ int read_data(char* data, const int line_number)
 	char* endptr;
 	for (int i = 0; i < line_length; i++)
 	{
-		if (*temp != ',' && *temp != ' ' && *temp != '\t' && *temp != '\n' && *temp != '\0')
+		if (*temp != ',' && *temp != ' ' && *temp != '\t' && !is_end_of_line(*temp))
 		{
 			data_str[counter] = *temp;
 			counter++;
@@ -609,12 +612,12 @@ int read_string(char* string, const int line_number)
 	char* temp = string;
 	int string_length = 0;
 
-	while (*temp != '"' && *temp != '\n' && *temp != '\0')
+	while (*temp != '"' && !is_end_of_line(*temp))
 	{
 		temp++;
 	}
 
-	if (*temp == '\n' || *temp == '\0')
+	if (is_end_of_line(*temp))
 	{
 		handle_error(ERROR_STRING_BAD_FORMAT, NULL, line_number);
 	}
@@ -628,7 +631,7 @@ int read_string(char* string, const int line_number)
 	memset(binary_stream, '0', 12);
 	binary_stream[12] = '\0';
 
-	while (*temp != '"' && *temp != '\n' && *temp != '\0')
+	while (*temp != '"' && !is_end_of_line(*temp))
 	{
 		int current = *temp;
 		if (current > 127)
@@ -646,7 +649,7 @@ int read_string(char* string, const int line_number)
 		temp++;
 	}
 
-	if (*temp == '\n' || *temp == '\0')
+	if (is_end_of_line(*temp))
 	{
 		handle_error(ERROR_STRING_BAD_FORMAT, NULL, line_number);
 	}

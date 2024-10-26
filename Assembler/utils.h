@@ -18,7 +18,8 @@ boolean int_to_binary(char** output, int num, int length, boolean use_twos_compl
 int get_line_length(char* line);
 
 // Line Reading
-boolean is_space(const char c);
+boolean is_space(char c);
+boolean is_end_of_line(char c);
 void skip_spaces(char** line);
 boolean do_ignore_line(char** line);
 int has_label(char* line, int line_length);

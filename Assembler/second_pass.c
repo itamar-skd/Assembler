@@ -81,7 +81,7 @@ void read_line_second_pass(char* line, const int line_number, int* ic)
 	memset(command_name, '\0', MAX_COMMAND_LENGTH);
 
 	int i;
-	for (i = 0; *temp != ' ' && *temp != '\t' && *temp != '\n' && *temp != '\0' && i < MAX_COMMAND_LENGTH; temp++, line_length--, i++)
+	for (i = 0; *temp != ' ' && *temp != '\t' && !is_end_of_line(*temp) && i < MAX_COMMAND_LENGTH; temp++, line_length--, i++)
 		command_name[i] = *temp;
 
 	command_name[i] = '\0';
@@ -122,7 +122,7 @@ void read_entry(char* entries, const int line_number)
 			continue;
 		}
 
-		if (*entries_iterator == ',' || *entries_iterator == '\n' || *entries_iterator == '\0')
+		if (*entries_iterator == ',' || is_end_of_line(*entries_iterator))
 		{
 			label[label_counter] = '\0';
 			if (is_valid_label(label))
@@ -139,7 +139,7 @@ void read_entry(char* entries, const int line_number)
 			else
 				handle_error(ERROR_LABEL_INVALID, label, line_number);
 
-			if (*entries_iterator == '\0' || *entries_iterator == '\n')
+			if (is_end_of_line(*entries_iterator))
 				keep_alive = FALSE;
 		}
 		else
@@ -189,7 +189,7 @@ int read_command_second_pass(const OpCode opcode, char* operands, const int line
 	if (source_operand)
 	{
 		int counter = 0;
-		while (*temp != ',' && *temp != '\n' && *temp != '\0')
+		while (*temp != ',' && !is_end_of_line(*temp))
 		{
 			if (*temp != ' ' && *temp != '\t')
 			{
@@ -264,7 +264,7 @@ int read_command_second_pass(const OpCode opcode, char* operands, const int line
 	if (target_operand)
 	{
 		int counter = 0;
-		while (*temp != ',' && *temp != '\n' && *temp != '\0')
+		while (*temp != ',' && !is_end_of_line(*temp))
 		{
 			if (*temp != ' ' && *temp != '\t')
 			{
